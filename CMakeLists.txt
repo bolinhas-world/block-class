@@ -2764,6 +2764,14 @@ if(SERVER)
   set_src(GAME_SERVER GLOB_RECURSE src/game/server
     ddracechat.cpp
     ddracecommands.cpp
+    blockclasschat.cpp
+    block_class/classes.cpp
+    block_class/classes.h
+    block_class/classes/IPlayerClass.h
+    block_class/classes/Soldier.cpp
+    block_class/classes/Soldier.h
+    block_class/classes/Ninja.cpp
+    block_class/classes/Ninja.h
     entities/character.cpp
     entities/character.h
     entities/door.cpp

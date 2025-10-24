@@ -8,6 +8,7 @@
 #include "player.h"
 #include "score.h"
 #include "teeinfo.h"
+#include "block_class/classes.h"
 
 #include <antibot/antibot_data.h>
 
@@ -97,6 +98,7 @@ void CGameContext::Construct(int Resetting)
 	m_SqlRandomMapResult = nullptr;
 
 	m_pScore = nullptr;
+	m_pClassManager = nullptr;
 
 	m_VoteCreator = -1;
 	m_VoteType = VOTE_TYPE_UNKNOWN;
@@ -151,6 +153,12 @@ void CGameContext::Destruct(int Resetting)
 	{
 		delete m_pScore;
 		m_pScore = nullptr;
+	}
+
+	if(m_pClassManager)
+	{
+		delete m_pClassManager;
+		m_pClassManager = nullptr;
 	}
 }
 
@@ -3869,6 +3877,11 @@ void CGameContext::RegisterDDRaceCommands()
 
 void CGameContext::RegisterChatCommands()
 {
+	// Block Class System Commands
+	Console()->Register("class", "?s[class name]", CFGFLAG_CHAT | CFGFLAG_SERVER, ConSelectClass, this, "Select your character class (soldier, ninja). Shows available classes if no argument given");
+	Console()->Register("classinfo", "", CFGFLAG_CHAT | CFGFLAG_SERVER, ConClassInfo, this, "Shows information about your current class");
+	Console()->Register("special", "", CFGFLAG_CHAT | CFGFLAG_SERVER, ConUseSpecial, this, "Use your class special ability");
+
 	Console()->Register("credits", "", CFGFLAG_CHAT | CFGFLAG_SERVER, ConCredits, this, "Shows the credits of the DDNet mod");
 	Console()->Register("rules", "", CFGFLAG_CHAT | CFGFLAG_SERVER, ConRules, this, "Shows the server rules");
 	Console()->Register("emote", "?s[emote name] i[duration in seconds]", CFGFLAG_CHAT | CFGFLAG_SERVER, ConEyeEmote, this, "Sets your tee's eye emote");
@@ -4155,6 +4168,12 @@ void CGameContext::OnInit(const void *pPersistentData)
 	if(!m_pScore)
 	{
 		m_pScore = new CScore(this, ((CServer *)Server())->DbPool());
+	}
+
+	if(!m_pClassManager)
+	{
+		m_pClassManager = new CClassManager(this);
+		m_pClassManager->Init();
 	}
 
 	// create all entities from the game layer

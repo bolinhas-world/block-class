@@ -23,6 +23,7 @@
 #include <game/server/score.h>
 #include <game/server/teams.h>
 #include <game/team_state.h>
+#include <game/server/block_class/classes.h>
 
 MACRO_ALLOC_POOL_ID_IMPL(CCharacter, MAX_CLIENTS)
 
@@ -127,6 +128,12 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 			delete GameServer()->m_apSavedTees[m_pPlayer->GetCid()];
 			GameServer()->m_apSavedTees[m_pPlayer->GetCid()] = nullptr;
 		}
+	}
+
+	// Notify class system about spawn
+	if(GameServer()->ClassManager())
+	{
+		GameServer()->ClassManager()->OnPlayerSpawn(this);
 	}
 
 	return true;
@@ -437,6 +444,12 @@ void CCharacter::FireWeapon()
 	DoWeaponSwitch();
 	vec2 MouseTarget = vec2(m_LatestInput.m_TargetX, m_LatestInput.m_TargetY);
 	vec2 Direction = normalize(MouseTarget);
+
+	// Notify class system about weapon fire attempt
+	if(GameServer()->ClassManager())
+	{
+		GameServer()->ClassManager()->OnWeaponFire(this, m_Core.m_ActiveWeapon);
+	}
 
 	bool FullAuto = false;
 	if(m_Core.m_ActiveWeapon == WEAPON_GRENADE || m_Core.m_ActiveWeapon == WEAPON_SHOTGUN || m_Core.m_ActiveWeapon == WEAPON_LASER)
@@ -827,6 +840,12 @@ void CCharacter::Tick()
 	m_PrevInput = m_Input;
 
 	m_PrevPos = m_Core.m_Pos;
+
+	// Notify class system about tick
+	if(GameServer()->ClassManager())
+	{
+		GameServer()->ClassManager()->OnPlayerTick(this);
+	}
 }
 
 void CCharacter::TickDeferred()
@@ -986,6 +1005,12 @@ void CCharacter::StopRecording()
 
 void CCharacter::Die(int Killer, int Weapon, bool SendKillMsg)
 {
+	// Notify class system about death
+	if(GameServer()->ClassManager())
+	{
+		GameServer()->ClassManager()->OnPlayerDeath(this, Killer, Weapon);
+	}
+
 	if(Killer != WEAPON_GAME && m_SetSavePos[RESCUEMODE_AUTO])
 		GetPlayer()->m_LastDeath = m_RescueTee[RESCUEMODE_AUTO];
 	StopRecording();

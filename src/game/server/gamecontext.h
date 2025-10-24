@@ -54,6 +54,7 @@ class IAntibot;
 class IGameController;
 class IEngine;
 class IStorage;
+class CClassManager;
 struct CAntibotRoundData;
 struct CScoreRandomMapResult;
 
@@ -410,10 +411,16 @@ private:
 	uint32_t m_NextUniqueClientId = 1;
 	bool m_VoteWillPass;
 	CScore *m_pScore;
+	CClassManager *m_pClassManager;
 
 	// DDRace Console Commands
 
 	static void ConKillPlayer(IConsole::IResult *pResult, void *pUserData);
+
+	// Block Class System Commands
+	static void ConSelectClass(IConsole::IResult *pResult, void *pUserData);
+	static void ConClassInfo(IConsole::IResult *pResult, void *pUserData);
+	static void ConUseSpecial(IConsole::IResult *pResult, void *pUserData);
 
 	static void ConNinja(IConsole::IResult *pResult, void *pUserData);
 	static void ConUnNinja(IConsole::IResult *pResult, void *pUserData);
@@ -609,6 +616,7 @@ private:
 public:
 	CLayers *Layers() { return &m_Layers; }
 	CScore *Score() { return m_pScore; }
+	CClassManager *ClassManager() { return m_pClassManager; }
 
 	enum
 	{
