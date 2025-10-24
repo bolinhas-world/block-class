@@ -28,6 +28,8 @@ void CBlockClassNinja::OnCharacterTick(CGameContext *pGameServer, CCharacter *pC
 
 	CCharacterCore Core = pCharacter->GetCore();
 	const float BaseSpeed = (float)Core.m_Tuning.m_GroundControlSpeed;
+	const float BaseAccel = (float)Core.m_Tuning.m_GroundControlAccel;
 	Core.m_Tuning.m_GroundControlSpeed = BaseSpeed * m_GroundSpeedMultiplier;
+	Core.m_Tuning.m_GroundControlAccel = BaseAccel * m_GroundAccelMultiplier;
 	pCharacter->SetCore(Core);
 }

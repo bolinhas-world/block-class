@@ -13,7 +13,8 @@ public:
 	void OnCharacterTick(CGameContext *pGameServer, CCharacter *pCharacter) override;
 
 private:
-	float m_GroundSpeedMultiplier = 1.8f;
+	float m_GroundSpeedMultiplier = 1.5f;
+	float m_GroundAccelMultiplier = 1.5f;
 };
 
 #endif
