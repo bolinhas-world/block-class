@@ -18,6 +18,8 @@ public:
 	void OnCharacterSpawn(CCharacter *pCharacter);
 	void OnCharacterTick(CCharacter *pCharacter);
 	void OnExplosionHit(int OwnerId, int Weapon, CCharacter *pOwner, CCharacter *pTarget, vec2 HitPos, vec2 ForceDir);
+	void OnProjectileHit(int OwnerId, int Weapon, CCharacter *pOwner, CCharacter *pTarget, vec2 HitPos);
+	float AdjustWeaponFireDelay(int ClientId, CCharacter *pCharacter, int Weapon, float BaseDelay) const;
 
 	void ListClasses(int ClientId) const;
 	bool HandleClassCommand(int ClientId, const char *pClassName);
@@ -28,6 +30,7 @@ private:
 	{
 		Soldier = 0,
 		Ninja,
+		Healer,
 		COUNT
 	};
 

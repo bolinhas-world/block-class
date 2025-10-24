@@ -1,5 +1,6 @@
 #include "class_manager.h"
 
+#include "healer.h"
 #include "ninja.h"
 #include "soldier.h"
 
@@ -14,6 +15,7 @@ CBlockClassManager::CBlockClassManager(CGameContext *pGameServer) :
 {
 	m_apClasses[static_cast<int>(EClassId::Soldier)] = std::make_unique<CBlockClassSoldier>();
 	m_apClasses[static_cast<int>(EClassId::Ninja)] = std::make_unique<CBlockClassNinja>();
+	m_apClasses[static_cast<int>(EClassId::Healer)] = std::make_unique<CBlockClassHealer>();
 	m_aPlayerClassByClient.fill(INVALID_CLASS);
 }
 
@@ -113,6 +115,42 @@ void CBlockClassManager::OnExplosionHit(int OwnerId, int Weapon, CCharacter *pOw
 	{
 		m_apClasses[ClassIndex]->OnExplosionHit(m_pGameServer, Weapon, pOwner, pTarget, HitPos, ForceDir);
 	}
+}
+
+void CBlockClassManager::OnProjectileHit(int OwnerId, int Weapon, CCharacter *pOwner, CCharacter *pTarget, vec2 HitPos)
+{
+	if(OwnerId < 0 || OwnerId >= MAX_CLIENTS)
+	{
+		return;
+	}
+
+	const int ClassIndex = m_aPlayerClassByClient[OwnerId];
+	if(ClassIndex >= 0)
+	{
+		m_apClasses[ClassIndex]->OnProjectileHit(m_pGameServer, Weapon, pOwner, pTarget, HitPos);
+	}
+}
+
+float CBlockClassManager::AdjustWeaponFireDelay(int ClientId, CCharacter *pCharacter, int Weapon, float BaseDelay) const
+{
+	if(ClientId < 0 || ClientId >= MAX_CLIENTS)
+	{
+		return BaseDelay;
+	}
+
+	const int ClassIndex = m_aPlayerClassByClient[ClientId];
+	if(ClassIndex < 0)
+	{
+		return BaseDelay;
+	}
+
+	const IBlockClass *pClass = m_apClasses[ClassIndex].get();
+	if(!pClass)
+	{
+		return BaseDelay;
+	}
+
+	return pClass->AdjustWeaponFireDelay(m_pGameServer, pCharacter, Weapon, BaseDelay);
 }
 
 void CBlockClassManager::ListClasses(int ClientId) const

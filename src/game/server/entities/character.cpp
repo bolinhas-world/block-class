@@ -633,6 +633,10 @@ void CCharacter::FireWeapon()
 	{
 		float FireDelay;
 		GetTuning(m_TuneZone)->Get(offsetof(CTuningParams, m_HammerFireDelay) / sizeof(CTuneParam) + m_Core.m_ActiveWeapon, &FireDelay);
+		if(GameServer()->BlockClassManager())
+		{
+			FireDelay = GameServer()->BlockClassManager()->AdjustWeaponFireDelay(m_pPlayer->GetCid(), this, m_Core.m_ActiveWeapon, FireDelay);
+		}
 		m_ReloadTimer = FireDelay * Server()->TickSpeed() / 1000;
 	}
 }

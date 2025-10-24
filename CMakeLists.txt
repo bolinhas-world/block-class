@@ -2766,6 +2766,8 @@ if(SERVER)
     block_class/block_class.h
     block_class/class_manager.cpp
     block_class/class_manager.h
+  block_class/healer.cpp
+  block_class/healer.h
     block_class/ninja.cpp
     block_class/ninja.h
     block_class/soldier.cpp

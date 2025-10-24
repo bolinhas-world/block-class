@@ -20,6 +20,8 @@ public:
 	virtual void OnUnassigned(CGameContext *pGameServer, CPlayer *pPlayer);
 	virtual void OnCharacterSpawn(CGameContext *pGameServer, CCharacter *pCharacter);
 	virtual void OnCharacterTick(CGameContext *pGameServer, CCharacter *pCharacter);
+	virtual float AdjustWeaponFireDelay(CGameContext *pGameServer, CCharacter *pCharacter, int Weapon, float BaseDelay) const;
+	virtual void OnProjectileHit(CGameContext *pGameServer, int Weapon, CCharacter *pOwner, CCharacter *pTarget, vec2 HitPos);
 	virtual void OnExplosionHit(CGameContext *pGameServer, int Weapon, CCharacter *pOwner, CCharacter *pTarget, vec2 HitPos, vec2 ForceDir);
 };
 
