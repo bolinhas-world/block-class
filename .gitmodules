@@ -1,4 +1,4 @@
 [submodule "ddnet-libs"]
 	path = ddnet-libs
-	url = https://github.com/ddnet/ddnet-libs
+	url = https://github.com/ddnet/ddnet-libs.git
 	shallow = true
