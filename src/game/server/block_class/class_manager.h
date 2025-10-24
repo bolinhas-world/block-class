@@ -29,7 +29,7 @@ private:
 	enum class EClassId : int
 	{
 		Soldier = 0,
-		Ninja,
+		Runner,
 		Healer,
 		COUNT
 	};

@@ -2768,8 +2768,8 @@ if(SERVER)
     block_class/class_manager.h
   block_class/healer.cpp
   block_class/healer.h
-    block_class/ninja.cpp
-    block_class/ninja.h
+    block_class/runner.cpp
+    block_class/runner.h
     block_class/soldier.cpp
     block_class/soldier.h
     ddracechat.cpp

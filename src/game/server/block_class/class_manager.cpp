@@ -1,7 +1,7 @@
 #include "class_manager.h"
 
 #include "healer.h"
-#include "ninja.h"
+#include "runner.h"
 #include "soldier.h"
 
 #include <base/system.h>
@@ -14,7 +14,7 @@ CBlockClassManager::CBlockClassManager(CGameContext *pGameServer) :
 	m_pGameServer(pGameServer)
 {
 	m_apClasses[static_cast<int>(EClassId::Soldier)] = std::make_unique<CBlockClassSoldier>();
-	m_apClasses[static_cast<int>(EClassId::Ninja)] = std::make_unique<CBlockClassNinja>();
+	m_apClasses[static_cast<int>(EClassId::Runner)] = std::make_unique<CBlockClassRunner>();
 	m_apClasses[static_cast<int>(EClassId::Healer)] = std::make_unique<CBlockClassHealer>();
 	m_aPlayerClassByClient.fill(INVALID_CLASS);
 }

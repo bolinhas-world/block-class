@@ -1,24 +1,24 @@
-#include "ninja.h"
+#include "runner.h"
 
 #include <game/server/entities/character.h>
 #include <game/server/gamecontext.h>
 
-const char *CBlockClassNinja::CommandName() const
+const char *CBlockClassRunner::CommandName() const
 {
-	return "ninja";
+	return "runner";
 }
 
-const char *CBlockClassNinja::DisplayName() const
+const char *CBlockClassRunner::DisplayName() const
 {
-	return "Ninja";
+	return "Runner";
 }
 
-const char *CBlockClassNinja::Description() const
+const char *CBlockClassRunner::Description() const
 {
 	return "Movimenta-se muito mais rapido que o normal.";
 }
 
-void CBlockClassNinja::OnCharacterTick(CGameContext *pGameServer, CCharacter *pCharacter)
+void CBlockClassRunner::OnCharacterTick(CGameContext *pGameServer, CCharacter *pCharacter)
 {
 	(void)pGameServer;
 	if(!pCharacter)

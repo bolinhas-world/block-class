@@ -1,9 +1,9 @@
-#ifndef GAME_SERVER_BLOCK_CLASS_NINJA_H
-#define GAME_SERVER_BLOCK_CLASS_NINJA_H
+#ifndef GAME_SERVER_BLOCK_CLASS_RUNNER_H
+#define GAME_SERVER_BLOCK_CLASS_RUNNER_H
 
 #include "block_class.h"
 
-class CBlockClassNinja final : public IBlockClass
+class CBlockClassRunner final : public IBlockClass
 {
 public:
 	const char *CommandName() const override;
