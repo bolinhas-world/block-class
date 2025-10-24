@@ -14,7 +14,7 @@ public:
 	void OnProjectileHit(CGameContext *pGameServer, int Weapon, CCharacter *pOwner, CCharacter *pTarget, vec2 HitPos) override;
 
 private:
-	float m_GunFireDelayMultiplier = 2.0f;
+	float m_GunFireDelayMultiplier = 3.0f;
 };
 
 #endif
