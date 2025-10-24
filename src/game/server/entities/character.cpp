@@ -6,6 +6,8 @@
 #include "pickup.h"
 #include "projectile.h"
 
+#include <game/server/block_class/class_manager.h>
+
 #include <antibot/antibot_data.h>
 
 #include <base/log.h>
@@ -128,6 +130,11 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 			GameServer()->m_apSavedTees[m_pPlayer->GetCid()] = nullptr;
 		}
 	}
+
+		if(GameServer()->BlockClassManager())
+		{
+			GameServer()->BlockClassManager()->OnCharacterSpawn(this);
+		}
 
 	return true;
 }
@@ -825,7 +832,6 @@ void CCharacter::Tick()
 
 	// Previnput
 	m_PrevInput = m_Input;
-
 	m_PrevPos = m_Core.m_Pos;
 }
 
@@ -2206,6 +2212,10 @@ void CCharacter::DDRaceTick()
 	}
 
 	HandleTuneLayer(); // need this before coretick
+	if(GameServer()->BlockClassManager())
+	{
+		GameServer()->BlockClassManager()->OnCharacterTick(this);
+	}
 
 	// check if the tee is in any type of freeze
 	int Index = Collision()->GetPureMapIndex(m_Pos);

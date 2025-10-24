@@ -54,6 +54,7 @@ class IAntibot;
 class IGameController;
 class IEngine;
 class IStorage;
+class CBlockClassManager;
 struct CAntibotRoundData;
 struct CScoreRandomMapResult;
 
@@ -119,6 +120,8 @@ class CGameContext : public IGameServer
 	CTuningParams m_aTuningList[NUM_TUNEZONES];
 	std::vector<std::string> m_vCensorlist;
 
+	std::unique_ptr<CBlockClassManager> m_pBlockClassManager;
+
 	bool m_TeeHistorianActive;
 	CTeeHistorian m_TeeHistorian;
 	ASYNCIO *m_pTeeHistorianFile;
@@ -163,6 +166,7 @@ class CGameContext : public IGameServer
 	static void ConDrySave(IConsole::IResult *pResult, void *pUserData);
 	static void ConDumpAntibot(IConsole::IResult *pResult, void *pUserData);
 	static void ConAntibot(IConsole::IResult *pResult, void *pUserData);
+	static void ConClass(IConsole::IResult *pResult, void *pUserData);
 	static void ConchainSpecialMotdupdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 	static void ConchainSettingUpdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 	static void ConchainPracticeByDefaultUpdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
@@ -200,6 +204,8 @@ public:
 	bool TeeHistorianActive() const { return m_TeeHistorianActive; }
 	CNetObjHandler *GetNetObjHandler() override { return &m_NetObjHandler; }
 	protocol7::CNetObjHandler *GetNetObjHandler7() override { return &m_NetObjHandler7; }
+	CBlockClassManager *BlockClassManager() { return m_pBlockClassManager.get(); }
+	const CBlockClassManager *BlockClassManager() const { return m_pBlockClassManager.get(); }
 
 	CGameContext();
 	CGameContext(int Reset);

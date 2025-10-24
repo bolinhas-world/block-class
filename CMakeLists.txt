@@ -2762,6 +2762,14 @@ if(SERVER)
   list(REMOVE_ITEM ENGINE_SERVER_WITHOUT_MAIN "${PROJECT_SOURCE_DIR}/src/engine/server/main.cpp")
 
   set_src(GAME_SERVER GLOB_RECURSE src/game/server
+    block_class/block_class.cpp
+    block_class/block_class.h
+    block_class/class_manager.cpp
+    block_class/class_manager.h
+    block_class/ninja.cpp
+    block_class/ninja.h
+    block_class/soldier.cpp
+    block_class/soldier.h
     ddracechat.cpp
     ddracecommands.cpp
     entities/character.cpp

@@ -1,5 +1,6 @@
 /* (c) Shereef Marzouk. See "licence DDRace.txt" and the readme.txt in the root of the distribution for more information. */
 #include "gamecontext.h"
+#include "block_class/class_manager.h"
 #include "player.h"
 #include "score.h"
 
@@ -108,6 +109,10 @@ void CGameContext::ConHelp(IConsole::IResult *pResult, void *pUserData)
 
 			if(pCmdInfo->Help())
 				pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp", pCmdInfo->Help());
+		}
+		else if(pSelf->BlockClassManager() && pSelf->BlockClassManager()->HandleHelpRequest(pResult->m_ClientId, pArg))
+		{
+			return;
 		}
 		else
 		{
