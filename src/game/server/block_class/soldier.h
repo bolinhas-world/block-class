@@ -13,7 +13,7 @@ public:
 	void OnExplosionHit(CGameContext *pGameServer, int Weapon, CCharacter *pOwner, CCharacter *pTarget, vec2 HitPos, vec2 ForceDir) override;
 
 private:
-	int m_FreezeSeconds = 3;
+	// int m_FreezeSeconds = 3;
 	float m_Knockback = 18.0f;
 };
 

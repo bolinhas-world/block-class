@@ -38,7 +38,7 @@ void CBlockClassSoldier::OnExplosionHit(CGameContext *pGameServer, int Weapon, C
 	}
 
 	// Freeze the enemy and launch them away from the blast.
-	pTarget->Freeze(m_FreezeSeconds);
+	// pTarget->Freeze(m_FreezeSeconds);
 
 	vec2 Dir = ForceDir;
 	if(length(Dir) <= 0.0001f)
