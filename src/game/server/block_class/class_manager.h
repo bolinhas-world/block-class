@@ -24,6 +24,8 @@ public:
 	void OnCharacterTakeDamage(CCharacter *pCharacter, vec2 &Force, int &Damage, int From, int Weapon);
 	void OnCharacterPostCoreTick(CCharacter *pCharacter);
 	float AdjustWeaponFireDelay(int ClientId, CCharacter *pCharacter, int Weapon, float BaseDelay) const;
+	bool RefreshClanForClient(int ClientId);
+	bool RefreshClanForGroup(int ClientId);
 
 	void ListClasses(int ClientId) const;
 	bool HandleClassCommand(int ClientId, const char *pClassName);

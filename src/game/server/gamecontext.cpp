@@ -2783,12 +2783,6 @@ void CGameContext::OnChangeInfoNetMessage(const CNetMsg_Cl_ChangeInfo *pMsg, int
 		LogEvent("Name change", ClientId);
 	}
 
-	if(Server()->WouldClientClanChange(ClientId, pMsg->m_pClan))
-	{
-		SixupNeedsUpdate = true;
-		Server()->SetClientClan(ClientId, pMsg->m_pClan);
-	}
-
 	if(Server()->ClientCountry(ClientId) != pMsg->m_Country)
 		SixupNeedsUpdate = true;
 	Server()->SetClientCountry(ClientId, pMsg->m_Country);
@@ -2799,6 +2793,11 @@ void CGameContext::OnChangeInfoNetMessage(const CNetMsg_Cl_ChangeInfo *pMsg, int
 	pPlayer->m_TeeInfos.m_ColorFeet = pMsg->m_ColorFeet;
 	if(!Server()->IsSixup(ClientId))
 		pPlayer->m_TeeInfos.ToSixup();
+
+	if(BlockClassManager())
+	{
+		SixupNeedsUpdate = BlockClassManager()->RefreshClanForGroup(ClientId) || SixupNeedsUpdate;
+	}
 
 	if(SixupNeedsUpdate)
 	{
@@ -2811,7 +2810,7 @@ void CGameContext::OnChangeInfoNetMessage(const CNetMsg_Cl_ChangeInfo *pMsg, int
 		Info.m_ClientId = ClientId;
 		Info.m_pName = Server()->ClientName(ClientId);
 		Info.m_Country = pMsg->m_Country;
-		Info.m_pClan = pMsg->m_pClan;
+		Info.m_pClan = Server()->ClientClan(ClientId);
 		Info.m_Local = 0;
 		Info.m_Silent = true;
 		Info.m_Team = pPlayer->GetTeam();
@@ -2977,8 +2976,13 @@ void CGameContext::OnStartInfoNetMessage(const CNetMsg_Cl_StartInfo *pMsg, int C
 	{
 		return;
 	}
-	Server()->SetClientClan(ClientId, pMsg->m_pClan);
-	// trying to set client clan can delete the player object, check if it still exists
+	if(m_pBlockClassManager)
+	{
+		if(m_pBlockClassManager->RefreshClanForGroup(ClientId) && !m_apPlayers[ClientId])
+		{
+			return;
+		}
+	}
 	if(!m_apPlayers[ClientId])
 	{
 		return;

@@ -7,6 +7,7 @@
 
 #include <base/system.h>
 
+#include <engine/server.h>
 #include <engine/shared/uuid_manager.h>
 
 #include <game/server/entities/character.h>
@@ -31,6 +32,7 @@ void CBlockClassManager::ResetPlayer(int ClientId)
 	}
 
 	m_aPlayerClassByClient[ClientId] = INVALID_CLASS;
+	RefreshClanForClient(ClientId);
 }
 
 void CBlockClassManager::HandlePlayerDisconnect(int ClientId)
@@ -53,6 +55,7 @@ void CBlockClassManager::HandlePlayerDisconnect(int ClientId)
 	}
 
 	m_aPlayerClassByClient[ClientId] = INVALID_CLASS;
+	RefreshClanForClient(ClientId);
 }
 
 void CBlockClassManager::OnCharacterSpawn(CCharacter *pCharacter)
@@ -406,6 +409,55 @@ std::vector<int> CBlockClassManager::CollectLinkedClients(int ClientId) const
 	return Clients;
 }
 
+bool CBlockClassManager::RefreshClanForClient(int ClientId)
+{
+	if(ClientId < 0 || ClientId >= MAX_CLIENTS || !m_pGameServer)
+	{
+		return false;
+	}
+
+	if(!m_pGameServer->m_apPlayers[ClientId])
+	{
+		return false;
+	}
+
+	IServer *pServer = m_pGameServer->Server();
+	if(!pServer || pServer->ClientSlotEmpty(ClientId))
+	{
+		return false;
+	}
+
+	const int ClassIndex = m_aPlayerClassByClient[ClientId];
+	const char *pDesiredClan = "";
+	if(ClassIndex >= 0)
+	{
+		const IBlockClass *pClass = m_apClasses[ClassIndex].get();
+		if(pClass)
+		{
+			pDesiredClan = pClass->DisplayName();
+		}
+	}
+
+	const char *pCurrentClan = pServer->ClientClan(ClientId);
+	if(pCurrentClan && str_comp(pCurrentClan, pDesiredClan) == 0)
+	{
+		return false;
+	}
+
+	pServer->SetClientClan(ClientId, pDesiredClan);
+	return true;
+}
+
+bool CBlockClassManager::RefreshClanForGroup(int ClientId)
+{
+	bool Changed = false;
+	for(int LinkedId : CollectLinkedClients(ClientId))
+	{
+		Changed |= RefreshClanForClient(LinkedId);
+	}
+	return Changed;
+}
+
 void CBlockClassManager::AssignClassToSingleClient(int ClientId, int ClassIndex, bool IsRequestingClient)
 {
 	if(ClientId < 0 || ClientId >= MAX_CLIENTS || ClassIndex < 0 || ClassIndex >= static_cast<int>(EClassId::COUNT))
@@ -428,6 +480,7 @@ void CBlockClassManager::AssignClassToSingleClient(int ClientId, int ClassIndex,
 			str_format(aBuf, sizeof(aBuf), "Voce ja esta com a classe %s.", m_apClasses[ClassIndex]->DisplayName());
 			m_pGameServer->SendChatTarget(ClientId, aBuf);
 		}
+		RefreshClanForClient(ClientId);
 		return;
 	}
 
@@ -448,6 +501,7 @@ void CBlockClassManager::AssignClassToSingleClient(int ClientId, int ClassIndex,
 	char aBuf[128];
 	str_format(aBuf, sizeof(aBuf), "Classe %s escolhida.", pClass->DisplayName());
 	m_pGameServer->SendChatTarget(ClientId, aBuf);
+	RefreshClanForClient(ClientId);
 }
 
 void CBlockClassManager::AssignPlayerClass(int ClientId, int ClassIndex)
