@@ -458,6 +458,39 @@ bool CBlockClassManager::RefreshClanForGroup(int ClientId)
 	return Changed;
 }
 
+bool CBlockClassManager::ApplyExistingClassForClient(int ClientId)
+{
+	if(ClientId < 0 || ClientId >= MAX_CLIENTS)
+	{
+		return false;
+	}
+
+	const std::vector<int> Clients = CollectLinkedClients(ClientId);
+	int SourceClass = INVALID_CLASS;
+	for(int LinkedId : Clients)
+	{
+		if(LinkedId == ClientId)
+		{
+			continue;
+		}
+
+		const int ClassIndex = m_aPlayerClassByClient[LinkedId];
+		if(ClassIndex >= 0)
+		{
+			SourceClass = ClassIndex;
+			break;
+		}
+	}
+
+	if(SourceClass == INVALID_CLASS)
+	{
+		return false;
+	}
+
+	AssignClassToSingleClient(ClientId, SourceClass, false);
+	return true;
+}
+
 void CBlockClassManager::AssignClassToSingleClient(int ClientId, int ClassIndex, bool IsRequestingClient)
 {
 	if(ClientId < 0 || ClientId >= MAX_CLIENTS || ClassIndex < 0 || ClassIndex >= static_cast<int>(EClassId::COUNT))

@@ -2978,6 +2978,7 @@ void CGameContext::OnStartInfoNetMessage(const CNetMsg_Cl_StartInfo *pMsg, int C
 	}
 	if(m_pBlockClassManager)
 	{
+		m_pBlockClassManager->ApplyExistingClassForClient(ClientId);
 		if(m_pBlockClassManager->RefreshClanForGroup(ClientId) && !m_apPlayers[ClientId])
 		{
 			return;
@@ -4326,6 +4327,7 @@ CPlayer *CGameContext::CreatePlayer(int ClientId, int StartTeam, bool Afk, int L
 	if(m_pBlockClassManager)
 	{
 		m_pBlockClassManager->ResetPlayer(ClientId);
+		m_pBlockClassManager->ApplyExistingClassForClient(ClientId);
 	}
 	m_NextUniqueClientId += 1;
 	return m_apPlayers[ClientId];

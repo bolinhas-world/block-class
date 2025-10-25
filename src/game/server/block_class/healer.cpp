@@ -53,3 +53,17 @@ void CBlockClassHealer::OnProjectileHit(CGameContext *pGameServer, int Weapon, C
 		pGameServer->CreateSound(HitPos, SOUND_PICKUP_HEALTH, pTarget->TeamMask());
 	}
 }
+
+void CBlockClassHealer::OnCharacterTakeDamage(CGameContext *pGameServer, CCharacter *pCharacter, vec2 &Force, int &Damage, int From, int Weapon)
+{
+	(void)pGameServer;
+	(void)pCharacter;
+	(void)Damage;
+	(void)From;
+	(void)Weapon;
+
+	if(Force.x != 0.0f || Force.y != 0.0f)
+	{
+		Force *= m_KnockbackMultiplier;
+	}
+}

@@ -26,6 +26,7 @@ public:
 	float AdjustWeaponFireDelay(int ClientId, CCharacter *pCharacter, int Weapon, float BaseDelay) const;
 	bool RefreshClanForClient(int ClientId);
 	bool RefreshClanForGroup(int ClientId);
+ 	bool ApplyExistingClassForClient(int ClientId);
 
 	void ListClasses(int ClientId) const;
 	bool HandleClassCommand(int ClientId, const char *pClassName);

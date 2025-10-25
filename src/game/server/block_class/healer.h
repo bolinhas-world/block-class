@@ -12,9 +12,11 @@ public:
 
 	float AdjustWeaponFireDelay(CGameContext *pGameServer, CCharacter *pCharacter, int Weapon, float BaseDelay) const override;
 	void OnProjectileHit(CGameContext *pGameServer, int Weapon, CCharacter *pOwner, CCharacter *pTarget, vec2 HitPos) override;
+	void OnCharacterTakeDamage(CGameContext *pGameServer, CCharacter *pCharacter, vec2 &Force, int &Damage, int From, int Weapon) override;
 
 private:
 	float m_GunFireDelayMultiplier = 3.0f;
+	float m_KnockbackMultiplier = 1.35f;
 };
 
 #endif
