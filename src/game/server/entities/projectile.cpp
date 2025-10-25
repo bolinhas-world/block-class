@@ -12,6 +12,8 @@
 #include <game/server/gamecontext.h>
 #include <game/server/gamemodes/DDRace.h>
 
+#include <game/server/block_class/class_manager.h>
+
 CProjectile::CProjectile(
 	CGameWorld *pGameWorld,
 	int Type,
@@ -181,7 +183,13 @@ void CProjectile::Tick()
 			}
 		}
 		else if(pTargetChr)
+		{
+			if(pOwnerChar && GameServer()->BlockClassManager())
+			{
+				GameServer()->BlockClassManager()->OnProjectileHit(m_Owner, m_Type, pOwnerChar, pTargetChr, ColPos);
+			}
 			pTargetChr->TakeDamage(vec2(0, 0), 0, m_Owner, m_Type);
+		}
 
 		if(pOwnerChar && !GameLayerClipped(ColPos) &&
 			((m_Type == WEAPON_GRENADE && pOwnerChar->HasTelegunGrenade()) || (m_Type == WEAPON_GUN && pOwnerChar->HasTelegunGun())))

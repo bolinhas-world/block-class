@@ -2,8 +2,41 @@
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #include "gamecontext.h"
 
+#include "block_class/class_manager.h"
 #include "entities/character.h"
 #include "gamemodes/DDRace.h"
+
+void CGameContext::ConClass(IConsole::IResult *pResult, void *pUserData)
+{
+	auto *pSelf = static_cast<CGameContext *>(pUserData);
+	int ClientId = pResult->m_ClientId;
+	if(!CheckClientId(ClientId))
+	{
+		return;
+	}
+
+	CBlockClassManager *pManager = pSelf->BlockClassManager();
+	if(!pManager)
+	{
+		return;
+	}
+
+	if(pResult->NumArguments() == 0)
+	{
+		pManager->ListClasses(ClientId);
+		return;
+	}
+
+	const char *pClassName = pResult->GetString(0);
+	if(pManager->HandleClassCommand(ClientId, pClassName))
+	{
+		return;
+	}
+
+	char aBuf[128];
+	str_format(aBuf, sizeof(aBuf), "Classe desconhecida: %s. Use /class para listar.", pClassName);
+	pSelf->SendChatTarget(ClientId, aBuf);
+}
 #include "gamemodes/mod.h"
 #include "player.h"
 #include "score.h"
@@ -129,10 +162,13 @@ void CGameContext::Construct(int Resetting)
 
 	m_aDeleteTempfile[0] = 0;
 	m_TeeHistorianActive = false;
+	m_pBlockClassManager = std::make_unique<CBlockClassManager>(this);
 }
 
 void CGameContext::Destruct(int Resetting)
 {
+	m_pBlockClassManager.reset();
+
 	for(auto &pPlayer : m_apPlayers)
 		delete pPlayer;
 
@@ -324,6 +360,7 @@ void CGameContext::CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamag
 	float InnerRadius = 48.0f;
 	int Num = m_World.FindEntities(Pos, Radius, apEnts, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER);
 	CClientMask TeamMask = CClientMask().set();
+	CCharacter *pOwnerChar = GetPlayerChar(Owner);
 	for(int i = 0; i < Num; i++)
 	{
 		auto *pChr = static_cast<CCharacter *>(apEnts[i]);
@@ -343,7 +380,7 @@ void CGameContext::CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamag
 		if(!(int)Dmg)
 			continue;
 
-		if((GetPlayerChar(Owner) ? !GetPlayerChar(Owner)->GrenadeHitDisabled() : g_Config.m_SvHit) || NoDamage || Owner == pChr->GetPlayer()->GetCid())
+		if((pOwnerChar ? !pOwnerChar->GrenadeHitDisabled() : g_Config.m_SvHit) || NoDamage || Owner == pChr->GetPlayer()->GetCid())
 		{
 			if(Owner != -1 && pChr->IsAlive() && !pChr->CanCollide(Owner))
 				continue;
@@ -352,7 +389,7 @@ void CGameContext::CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamag
 
 			// Explode at most once per team
 			int PlayerTeam = pChr->Team();
-			if((GetPlayerChar(Owner) ? GetPlayerChar(Owner)->GrenadeHitDisabled() : !g_Config.m_SvHit) || NoDamage)
+			if((pOwnerChar ? pOwnerChar->GrenadeHitDisabled() : !g_Config.m_SvHit) || NoDamage)
 			{
 				if(PlayerTeam == TEAM_SUPER)
 					continue;
@@ -362,6 +399,11 @@ void CGameContext::CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamag
 			}
 
 			pChr->TakeDamage(ForceDir * Dmg * 2, (int)Dmg, Owner, Weapon);
+
+			if(pOwnerChar && BlockClassManager() && Weapon == WEAPON_GRENADE)
+			{
+				BlockClassManager()->OnExplosionHit(Owner, Weapon, pOwnerChar, pChr, Pos, ForceDir);
+			}
 		}
 	}
 }
@@ -1903,6 +1945,11 @@ bool CGameContext::OnClientDDNetVersionKnown(int ClientId)
 			m_TeeHistorian.RecordDDNetVersionOld(ClientId, ClientVersion);
 		}
 	}
+			if(m_pBlockClassManager)
+			{
+				m_pBlockClassManager->HandlePlayerDisconnect(ClientId);
+			}
+
 
 	// Autoban known bot versions.
 	if(g_Config.m_SvBannedVersions[0] != '\0' && IsVersionBanned(ClientVersion))
@@ -2736,12 +2783,6 @@ void CGameContext::OnChangeInfoNetMessage(const CNetMsg_Cl_ChangeInfo *pMsg, int
 		LogEvent("Name change", ClientId);
 	}
 
-	if(Server()->WouldClientClanChange(ClientId, pMsg->m_pClan))
-	{
-		SixupNeedsUpdate = true;
-		Server()->SetClientClan(ClientId, pMsg->m_pClan);
-	}
-
 	if(Server()->ClientCountry(ClientId) != pMsg->m_Country)
 		SixupNeedsUpdate = true;
 	Server()->SetClientCountry(ClientId, pMsg->m_Country);
@@ -2752,6 +2793,11 @@ void CGameContext::OnChangeInfoNetMessage(const CNetMsg_Cl_ChangeInfo *pMsg, int
 	pPlayer->m_TeeInfos.m_ColorFeet = pMsg->m_ColorFeet;
 	if(!Server()->IsSixup(ClientId))
 		pPlayer->m_TeeInfos.ToSixup();
+
+	if(BlockClassManager())
+	{
+		SixupNeedsUpdate = BlockClassManager()->RefreshClanForGroup(ClientId) || SixupNeedsUpdate;
+	}
 
 	if(SixupNeedsUpdate)
 	{
@@ -2764,7 +2810,7 @@ void CGameContext::OnChangeInfoNetMessage(const CNetMsg_Cl_ChangeInfo *pMsg, int
 		Info.m_ClientId = ClientId;
 		Info.m_pName = Server()->ClientName(ClientId);
 		Info.m_Country = pMsg->m_Country;
-		Info.m_pClan = pMsg->m_pClan;
+		Info.m_pClan = Server()->ClientClan(ClientId);
 		Info.m_Local = 0;
 		Info.m_Silent = true;
 		Info.m_Team = pPlayer->GetTeam();
@@ -2930,8 +2976,14 @@ void CGameContext::OnStartInfoNetMessage(const CNetMsg_Cl_StartInfo *pMsg, int C
 	{
 		return;
 	}
-	Server()->SetClientClan(ClientId, pMsg->m_pClan);
-	// trying to set client clan can delete the player object, check if it still exists
+	if(m_pBlockClassManager)
+	{
+		m_pBlockClassManager->ApplyExistingClassForClient(ClientId);
+		if(m_pBlockClassManager->RefreshClanForGroup(ClientId) && !m_apPlayers[ClientId])
+		{
+			return;
+		}
+	}
 	if(!m_apPlayers[ClientId])
 	{
 		return;
@@ -3875,6 +3927,7 @@ void CGameContext::RegisterChatCommands()
 	Console()->Register("eyeemote", "?s['on'|'off'|'toggle']", CFGFLAG_CHAT | CFGFLAG_SERVER, ConSetEyeEmote, this, "Toggles use of standard eye-emotes on/off, eyeemote s, where s = on for on, off for off, toggle for toggle and nothing to show current status");
 	Console()->Register("settings", "?s[configname]", CFGFLAG_CHAT | CFGFLAG_SERVER, ConSettings, this, "Shows gameplay information for this server");
 	Console()->Register("help", "?r[command]", CFGFLAG_CHAT | CFGFLAG_SERVER, ConHelp, this, "Shows help to command r, general help if left blank");
+	Console()->Register("class", "?s[nome]", CFGFLAG_CHAT | CFGFLAG_SERVER, ConClass, this, "Seleciona uma classe especial");
 	Console()->Register("info", "", CFGFLAG_CHAT | CFGFLAG_SERVER, ConInfo, this, "Shows info about this server");
 	Console()->Register("list", "?s[filter]", CFGFLAG_CHAT, ConList, this, "List connected players with optional case-insensitive substring matching filter");
 	Console()->Register("w", "s[player name] r[message]", CFGFLAG_CHAT | CFGFLAG_SERVER | CFGFLAG_NONTEEHISTORIC, ConWhisper, this, "Whisper something to someone (private message)");
@@ -4271,6 +4324,11 @@ CPlayer *CGameContext::CreatePlayer(int ClientId, int StartTeam, bool Afk, int L
 	m_apPlayers[ClientId] = new(ClientId) CPlayer(this, m_NextUniqueClientId, ClientId, StartTeam);
 	m_apPlayers[ClientId]->SetInitialAfk(Afk);
 	m_apPlayers[ClientId]->m_LastWhisperTo = LastWhisperTo;
+	if(m_pBlockClassManager)
+	{
+		m_pBlockClassManager->ResetPlayer(ClientId);
+		m_pBlockClassManager->ApplyExistingClassForClient(ClientId);
+	}
 	m_NextUniqueClientId += 1;
 	return m_apPlayers[ClientId];
 }
