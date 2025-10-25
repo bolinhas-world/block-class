@@ -26,6 +26,7 @@ public:
 	virtual void OnExplosionHit(CGameContext *pGameServer, int Weapon, CCharacter *pOwner, CCharacter *pTarget, vec2 HitPos, vec2 ForceDir);
 	virtual void OnCharacterTakeDamage(CGameContext *pGameServer, CCharacter *pCharacter, vec2 &Force, int &Damage, int From, int Weapon);
 	virtual void OnCharacterPostCoreTick(CGameContext *pGameServer, CCharacter *pCharacter);
+	virtual bool OnCharacterGunFire(CGameContext *pGameServer, CCharacter *pCharacter, vec2 ProjStartPos, vec2 Direction, vec2 MouseTarget);
 };
 
 #endif

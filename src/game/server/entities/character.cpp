@@ -552,22 +552,31 @@ void CCharacter::FireWeapon()
 	{
 		if(!m_Core.m_Jetpack || !m_pPlayer->m_NinjaJetpack || m_Core.m_HasTelegunGun)
 		{
-			int Lifetime = (int)(Server()->TickSpeed() * GetTuning(m_TuneZone)->m_GunLifetime);
+			bool Handled = false;
+			if(GameServer()->BlockClassManager())
+			{
+				Handled = GameServer()->BlockClassManager()->HandleGunFire(m_pPlayer->GetCid(), this, ProjStartPos, Direction, MouseTarget);
+			}
 
-			new CProjectile(
-				GameWorld(),
-				WEAPON_GUN, //Type
-				m_pPlayer->GetCid(), //Owner
-				ProjStartPos, //Pos
-				Direction, //Dir
-				Lifetime, //Span
-				false, //Freeze
-				false, //Explosive
-				-1, //SoundImpact
-				MouseTarget //InitDir
-			);
+			if(!Handled)
+			{
+				int Lifetime = (int)(Server()->TickSpeed() * GetTuning(m_TuneZone)->m_GunLifetime);
 
-			GameServer()->CreateSound(m_Pos, SOUND_GUN_FIRE, TeamMask()); // NOLINT(clang-analyzer-unix.Malloc)
+				new CProjectile(
+					GameWorld(),
+					WEAPON_GUN, //Type
+					m_pPlayer->GetCid(), //Owner
+					ProjStartPos, //Pos
+					Direction, //Dir
+					Lifetime, //Span
+					false, //Freeze
+					false, //Explosive
+					-1, //SoundImpact
+					MouseTarget //InitDir
+				);
+
+				GameServer()->CreateSound(m_Pos, SOUND_GUN_FIRE, TeamMask()); // NOLINT(clang-analyzer-unix.Malloc)
+			}
 		}
 	}
 	break;

@@ -1,6 +1,7 @@
 #include "class_manager.h"
 
 #include "healer.h"
+#include "kangaro.h"
 #include "runner.h"
 #include "soldier.h"
 #include "tank.h"
@@ -19,6 +20,7 @@ CBlockClassManager::CBlockClassManager(CGameContext *pGameServer) :
 {
 	m_apClasses[static_cast<int>(EClassId::Soldier)] = std::make_unique<CBlockClassSoldier>();
 	m_apClasses[static_cast<int>(EClassId::Runner)] = std::make_unique<CBlockClassRunner>();
+	m_apClasses[static_cast<int>(EClassId::Kangaro)] = std::make_unique<CBlockClassKangaro>();
 	m_apClasses[static_cast<int>(EClassId::Healer)] = std::make_unique<CBlockClassHealer>();
 	m_apClasses[static_cast<int>(EClassId::Tank)] = std::make_unique<CBlockClassTank>();
 	m_aPlayerClassByClient.fill(INVALID_CLASS);
@@ -236,6 +238,28 @@ float CBlockClassManager::AdjustWeaponFireDelay(int ClientId, CCharacter *pChara
 	}
 
 	return pClass->AdjustWeaponFireDelay(m_pGameServer, pCharacter, Weapon, BaseDelay);
+}
+
+bool CBlockClassManager::HandleGunFire(int ClientId, CCharacter *pCharacter, vec2 ProjStartPos, vec2 Direction, vec2 MouseTarget)
+{
+	if(ClientId < 0 || ClientId >= MAX_CLIENTS)
+	{
+		return false;
+	}
+
+	const int ClassIndex = m_aPlayerClassByClient[ClientId];
+	if(ClassIndex < 0)
+	{
+		return false;
+	}
+
+	IBlockClass *pClass = m_apClasses[ClassIndex].get();
+	if(!pClass)
+	{
+		return false;
+	}
+
+	return pClass->OnCharacterGunFire(m_pGameServer, pCharacter, ProjStartPos, Direction, MouseTarget);
 }
 
 void CBlockClassManager::ListClasses(int ClientId) const

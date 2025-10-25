@@ -77,3 +77,13 @@ void IBlockClass::OnCharacterPostCoreTick(CGameContext *pGameServer, CCharacter 
 	(void)pGameServer;
 	(void)pCharacter;
 }
+
+bool IBlockClass::OnCharacterGunFire(CGameContext *pGameServer, CCharacter *pCharacter, vec2 ProjStartPos, vec2 Direction, vec2 MouseTarget)
+{
+	(void)pGameServer;
+	(void)pCharacter;
+	(void)ProjStartPos;
+	(void)Direction;
+	(void)MouseTarget;
+	return false;
+}

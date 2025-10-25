@@ -26,7 +26,8 @@ public:
 	float AdjustWeaponFireDelay(int ClientId, CCharacter *pCharacter, int Weapon, float BaseDelay) const;
 	bool RefreshClanForClient(int ClientId);
 	bool RefreshClanForGroup(int ClientId);
- 	bool ApplyExistingClassForClient(int ClientId);
+	bool ApplyExistingClassForClient(int ClientId);
+	bool HandleGunFire(int ClientId, CCharacter *pCharacter, vec2 ProjStartPos, vec2 Direction, vec2 MouseTarget);
 
 	void ListClasses(int ClientId) const;
 	bool HandleClassCommand(int ClientId, const char *pClassName);
@@ -37,6 +38,7 @@ private:
 	{
 		Soldier = 0,
 		Runner,
+		Kangaro,
 		Healer,
 		Tank,
 		COUNT
