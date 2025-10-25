@@ -4,6 +4,7 @@
 #include "block_class.h"
 #include <array>
 #include <memory>
+#include <vector>
 
 #include <engine/shared/protocol.h>
 
@@ -46,6 +47,8 @@ private:
 
 	int FindClassIndex(const char *pName) const;
 	const IBlockClass *FindClassByQuery(const char *pQuery, int *pOutIndex) const;
+	std::vector<int> CollectLinkedClients(int ClientId) const;
+	void AssignClassToSingleClient(int ClientId, int ClassIndex, bool IsRequestingClient);
 	void AssignPlayerClass(int ClientId, int ClassIndex);
 };
 

@@ -7,6 +7,8 @@
 
 #include <base/system.h>
 
+#include <engine/shared/uuid_manager.h>
+
 #include <game/server/entities/character.h>
 #include <game/server/gamecontext.h>
 #include <game/server/player.h>
@@ -349,7 +351,62 @@ const IBlockClass *CBlockClassManager::FindClassByQuery(const char *pQuery, int 
 	return m_apClasses[Index].get();
 }
 
-void CBlockClassManager::AssignPlayerClass(int ClientId, int ClassIndex)
+std::vector<int> CBlockClassManager::CollectLinkedClients(int ClientId) const
+{
+	std::vector<int> Clients;
+	if(ClientId < 0 || ClientId >= MAX_CLIENTS)
+	{
+		return Clients;
+	}
+
+	Clients.push_back(ClientId);
+
+	if(!m_pGameServer)
+	{
+		return Clients;
+	}
+
+	IServer *pServer = m_pGameServer->Server();
+	if(!pServer)
+	{
+		return Clients;
+	}
+
+	IServer::CClientInfo Info{};
+	if(!pServer->GetClientInfo(ClientId, &Info) || !Info.m_pConnectionId)
+	{
+		return Clients;
+	}
+
+	const CUuid ConnectionId = *Info.m_pConnectionId;
+	for(int OtherId = 0; OtherId < MAX_CLIENTS; ++OtherId)
+	{
+		if(OtherId == ClientId)
+		{
+			continue;
+		}
+
+		if(!m_pGameServer->m_apPlayers[OtherId])
+		{
+			continue;
+		}
+
+		IServer::CClientInfo OtherInfo{};
+		if(!pServer->GetClientInfo(OtherId, &OtherInfo) || !OtherInfo.m_pConnectionId)
+		{
+			continue;
+		}
+
+		if(*OtherInfo.m_pConnectionId == ConnectionId)
+		{
+			Clients.push_back(OtherId);
+		}
+	}
+
+	return Clients;
+}
+
+void CBlockClassManager::AssignClassToSingleClient(int ClientId, int ClassIndex, bool IsRequestingClient)
 {
 	if(ClientId < 0 || ClientId >= MAX_CLIENTS || ClassIndex < 0 || ClassIndex >= static_cast<int>(EClassId::COUNT))
 	{
@@ -365,9 +422,12 @@ void CBlockClassManager::AssignPlayerClass(int ClientId, int ClassIndex)
 	const int Current = m_aPlayerClassByClient[ClientId];
 	if(Current == ClassIndex)
 	{
-		char aBuf[128];
-		str_format(aBuf, sizeof(aBuf), "Voce ja esta com a classe %s.", m_apClasses[ClassIndex]->DisplayName());
-		m_pGameServer->SendChatTarget(ClientId, aBuf);
+		if(IsRequestingClient)
+		{
+			char aBuf[128];
+			str_format(aBuf, sizeof(aBuf), "Voce ja esta com a classe %s.", m_apClasses[ClassIndex]->DisplayName());
+			m_pGameServer->SendChatTarget(ClientId, aBuf);
+		}
 		return;
 	}
 
@@ -388,4 +448,18 @@ void CBlockClassManager::AssignPlayerClass(int ClientId, int ClassIndex)
 	char aBuf[128];
 	str_format(aBuf, sizeof(aBuf), "Classe %s escolhida.", pClass->DisplayName());
 	m_pGameServer->SendChatTarget(ClientId, aBuf);
+}
+
+void CBlockClassManager::AssignPlayerClass(int ClientId, int ClassIndex)
+{
+	if(ClientId < 0 || ClientId >= MAX_CLIENTS || ClassIndex < 0 || ClassIndex >= static_cast<int>(EClassId::COUNT))
+	{
+		return;
+	}
+
+	const std::vector<int> Clients = CollectLinkedClients(ClientId);
+	for(int LinkedClientId : Clients)
+	{
+		AssignClassToSingleClient(LinkedClientId, ClassIndex, LinkedClientId == ClientId);
+	}
 }
