@@ -1029,6 +1029,11 @@ void CCharacter::Die(int Killer, int Weapon, bool SendKillMsg)
 
 bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 {
+	if(GameServer()->BlockClassManager())
+	{
+		GameServer()->BlockClassManager()->OnCharacterTakeDamage(this, Force, Dmg, From, Weapon);
+	}
+
 	if(Dmg)
 	{
 		SetEmote(EMOTE_PAIN, Server()->Tick() + 500 * Server()->TickSpeed() / 1000);
@@ -2256,6 +2261,11 @@ void CCharacter::DDRacePostCoreTick()
 {
 	m_Time = (float)(Server()->Tick() - m_StartTime) / ((float)Server()->TickSpeed());
 
+	if(GameServer()->BlockClassManager())
+	{
+		GameServer()->BlockClassManager()->OnCharacterPostCoreTick(this);
+	}
+
 	if(m_Core.m_EndlessHook || (m_Core.m_Super && g_Config.m_SvEndlessSuperHook))
 		m_Core.m_HookTick = 0;
 
@@ -2568,6 +2578,10 @@ void CCharacter::SetRawVelocity(vec2 NewVelocity)
 
 void CCharacter::AddVelocity(vec2 Addition)
 {
+	if(GameServer()->BlockClassManager())
+	{
+		GameServer()->BlockClassManager()->OnCharacterAddVelocity(this, Addition);
+	}
 	SetVelocity(m_Core.m_Vel + Addition);
 }
 

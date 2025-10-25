@@ -3,6 +3,7 @@
 #include "healer.h"
 #include "runner.h"
 #include "soldier.h"
+#include "tank.h"
 
 #include <base/system.h>
 
@@ -16,6 +17,7 @@ CBlockClassManager::CBlockClassManager(CGameContext *pGameServer) :
 	m_apClasses[static_cast<int>(EClassId::Soldier)] = std::make_unique<CBlockClassSoldier>();
 	m_apClasses[static_cast<int>(EClassId::Runner)] = std::make_unique<CBlockClassRunner>();
 	m_apClasses[static_cast<int>(EClassId::Healer)] = std::make_unique<CBlockClassHealer>();
+	m_apClasses[static_cast<int>(EClassId::Tank)] = std::make_unique<CBlockClassTank>();
 	m_aPlayerClassByClient.fill(INVALID_CLASS);
 }
 
@@ -128,6 +130,84 @@ void CBlockClassManager::OnProjectileHit(int OwnerId, int Weapon, CCharacter *pO
 	if(ClassIndex >= 0)
 	{
 		m_apClasses[ClassIndex]->OnProjectileHit(m_pGameServer, Weapon, pOwner, pTarget, HitPos);
+	}
+}
+
+void CBlockClassManager::OnCharacterAddVelocity(CCharacter *pCharacter, vec2 &Addition)
+{
+	if(!pCharacter)
+	{
+		return;
+	}
+
+	CPlayer *pPlayer = pCharacter->GetPlayer();
+	if(!pPlayer)
+	{
+		return;
+	}
+
+	const int ClientId = pPlayer->GetCid();
+	if(ClientId < 0 || ClientId >= MAX_CLIENTS)
+	{
+		return;
+	}
+
+	const int ClassIndex = m_aPlayerClassByClient[ClientId];
+	if(ClassIndex >= 0)
+	{
+		m_apClasses[ClassIndex]->OnCharacterAddVelocity(m_pGameServer, pCharacter, Addition);
+	}
+}
+
+void CBlockClassManager::OnCharacterTakeDamage(CCharacter *pCharacter, vec2 &Force, int &Damage, int From, int Weapon)
+{
+	if(!pCharacter)
+	{
+		return;
+	}
+
+	CPlayer *pPlayer = pCharacter->GetPlayer();
+	if(!pPlayer)
+	{
+		return;
+	}
+
+	const int ClientId = pPlayer->GetCid();
+	if(ClientId < 0 || ClientId >= MAX_CLIENTS)
+	{
+		return;
+	}
+
+	const int ClassIndex = m_aPlayerClassByClient[ClientId];
+	if(ClassIndex >= 0)
+	{
+		m_apClasses[ClassIndex]->OnCharacterTakeDamage(m_pGameServer, pCharacter, Force, Damage, From, Weapon);
+	}
+}
+
+void CBlockClassManager::OnCharacterPostCoreTick(CCharacter *pCharacter)
+{
+	if(!pCharacter)
+	{
+		return;
+	}
+
+	CPlayer *pPlayer = pCharacter->GetPlayer();
+	if(!pPlayer)
+	{
+		return;
+	}
+
+	const int ClientId = pPlayer->GetCid();
+	if(ClientId < 0 || ClientId >= MAX_CLIENTS)
+	{
+		return;
+	}
+
+	const int ClassIndex = m_aPlayerClassByClient[ClientId];
+	if(ClassIndex >= 0)
+	{
+		m_apClasses[ClassIndex]->OnCharacterPostCoreTick(m_pGameServer, pCharacter);
 	}
 }
 

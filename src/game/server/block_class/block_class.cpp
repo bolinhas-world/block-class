@@ -28,6 +28,13 @@ void IBlockClass::OnCharacterTick(CGameContext *pGameServer, CCharacter *pCharac
 	(void)pCharacter;
 }
 
+void IBlockClass::OnCharacterAddVelocity(CGameContext *pGameServer, CCharacter *pCharacter, vec2 &Addition)
+{
+	(void)pGameServer;
+	(void)pCharacter;
+	(void)Addition;
+}
+
 float IBlockClass::AdjustWeaponFireDelay(CGameContext *pGameServer, CCharacter *pCharacter, int Weapon, float BaseDelay) const
 {
 	(void)pGameServer;
@@ -53,4 +60,20 @@ void IBlockClass::OnExplosionHit(CGameContext *pGameServer, int Weapon, CCharact
 	(void)pTarget;
 	(void)HitPos;
 	(void)ForceDir;
+}
+
+void IBlockClass::OnCharacterTakeDamage(CGameContext *pGameServer, CCharacter *pCharacter, vec2 &Force, int &Damage, int From, int Weapon)
+{
+	(void)pGameServer;
+	(void)pCharacter;
+	(void)Force;
+	(void)Damage;
+	(void)From;
+	(void)Weapon;
+}
+
+void IBlockClass::OnCharacterPostCoreTick(CGameContext *pGameServer, CCharacter *pCharacter)
+{
+	(void)pGameServer;
+	(void)pCharacter;
 }

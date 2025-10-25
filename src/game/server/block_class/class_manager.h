@@ -19,6 +19,9 @@ public:
 	void OnCharacterTick(CCharacter *pCharacter);
 	void OnExplosionHit(int OwnerId, int Weapon, CCharacter *pOwner, CCharacter *pTarget, vec2 HitPos, vec2 ForceDir);
 	void OnProjectileHit(int OwnerId, int Weapon, CCharacter *pOwner, CCharacter *pTarget, vec2 HitPos);
+	void OnCharacterAddVelocity(CCharacter *pCharacter, vec2 &Addition);
+	void OnCharacterTakeDamage(CCharacter *pCharacter, vec2 &Force, int &Damage, int From, int Weapon);
+	void OnCharacterPostCoreTick(CCharacter *pCharacter);
 	float AdjustWeaponFireDelay(int ClientId, CCharacter *pCharacter, int Weapon, float BaseDelay) const;
 
 	void ListClasses(int ClientId) const;
@@ -31,6 +34,7 @@ private:
 		Soldier = 0,
 		Runner,
 		Healer,
+		Tank,
 		COUNT
 	};
 

@@ -2766,12 +2766,14 @@ if(SERVER)
     block_class/block_class.h
     block_class/class_manager.cpp
     block_class/class_manager.h
-  block_class/healer.cpp
-  block_class/healer.h
+    block_class/healer.cpp
+    block_class/healer.h
     block_class/runner.cpp
     block_class/runner.h
     block_class/soldier.cpp
     block_class/soldier.h
+    block_class/tank.cpp
+    block_class/tank.h
     ddracechat.cpp
     ddracecommands.cpp
     entities/character.cpp
